@@ -1,0 +1,87 @@
+<!-- 小说详情 -->
+<template>
+	<view class="content" >
+		<view class="book">
+			<image :src="'http:'+detData.bookImage" mode="aspectFill" class="list-item-image"></image>
+			<view class="list-box">
+				<text class="title">{{ detData.bookName }}</text>
+				<text class="author">{{ detData.author }}</text>
+			</view>
+		</view>
+		<view>
+			<text class="con-title">简介</text>
+			<text class="con" v-if="detData.content">{{detData.content.toString().trim()}}</text>
+		</view>
+		<view class="footer" >
+			<text class="footer-but but-bookz" :style="`height:${screenBottom+40}px;`" @click="shelf">加入书架</text>
+			<text class="footer-but but-red" :style="`height:${screenBottom+40}px;`"  @click="read">立即阅读</text>
+		</view>
+		
+	</view>
+</template>
+
+<script>
+	const http = getApp().globalData.$http.http;
+	export default {
+		data() {
+			return {
+				bookId:'',
+				screenBottom:0,
+				detData: {}
+			};
+		},
+		onLoad(option) {
+			const sys = uni.getSystemInfoSync();
+			console.log(sys)
+			this.screenBottom = (sys.safeAreaInsets.bottom!==0) ? sys.safeAreaInsets.bottom-10:0;
+			console.log(this.screenBottom)
+			console.log('det'+option.bookId);
+			this.bookId=option.bookId;
+			this.getDet()
+		},
+		methods: {
+			getDet(callback) {
+				http({
+					url: '/common/book/details',
+					data: {
+						bookId: this.bookId
+					}
+				}).then(res => {
+					console.log(res)
+					if (res.code == 200) {
+						this.detData = res.data;
+					}
+					callback && callback();
+				})
+			},
+			read() {
+				uni.navigateTo({
+					url: '/pages/reader/reader?bookId='+this.bookId
+				})
+			},
+			shelf(){
+				http({
+					url: '/token/client/shelf/add',
+					data: {
+						bookId: this.bookId,
+						progressDirectoryId:''
+					},
+					method:'post'
+				}).then(res => {
+					console.log(res)
+					if (res.code == 200) {
+						uni.showToast({
+							title: '加入成功'
+						})
+					}
+				
+				})
+			}
+		}
+	}
+</script>
+
+<style>
+	@import url("./bookDet.css");
+
+</style>

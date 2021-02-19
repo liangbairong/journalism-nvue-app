@@ -1,0 +1,194 @@
+<template>
+	<view class="box" id="box" :style="`height:${readerHeight-30}px;top:${screenTop+30}px;`" @touchstart="start">
+		<view class="content" id="content" :style="`height:${readerHeight-30}px;left:${0}upx;`" >
+			<text class="p" v-for="(item,index) in bookContent" :key="index">{{item.name=='p'?item.children[0].text:''}}</text>
+		</view>
+	
+	</view>
+</template>
+
+<script>
+	export default {
+		data() {
+			return {
+				screenHeight: 0, //整个页面高度
+				screenTop: 0, //顶部菜单栏高度
+				readerHeight: 0, //安全区高度
+				screenWidth: 0,
+				pageIndex: 0,
+			}
+		},
+		props: {
+			bookContent: {
+				type: Object,
+				default: {}
+			},
+		},
+		computed: {
+			// 计算属性的 getter
+			pageAttr: function() {
+				// return this.paheight();
+			var content = uni.createSelectorQuery().select('#content');
+			content.boundingClientRect(data => {
+				console.log(data.height)
+			        // this.boxHeight = Math.floor(data.height / 26) * 26
+			        // console.log('boxHeight', this.boxHeight)
+			      }).exec()
+				return this.bookContent
+			}
+		},
+
+		created() {
+			const sys = uni.getSystemInfoSync();
+			this.readerHeight = sys.safeArea.height;
+			this.screenTop = sys.safeAreaInsets.top;
+			this.screenHeight = sys.windowHeight;
+			this.screenWidth = sys.windowWidth;
+			
+		
+		},
+		methods: {
+			getEl: function(el) {
+				if (typeof el === 'string' || typeof el === 'number') return el;
+				if (WXEnvironment) {
+					return el.ref;
+				} else {
+					return el instanceof HTMLElement ? el : el.$el;
+				}
+			},
+			start(e) {
+				console.log(this.bookContent)
+				const x = e.touches[0].screenX;
+				const critical = this.screenWidth / 2;
+				console.log(x)
+				if (x > critical) {
+					console.log('下一页')
+					this.pageIndex++;
+				} else if (x < critical) {
+					console.log('上一页')
+					this.pageIndex--;
+				}
+
+		
+
+			},
+			paheight() {
+				var temp = [];
+				var nowAttr = [];
+				this.bookContent.forEach(item => {
+					if (item.name == 'p') {
+						nowAttr.push({
+							type: item.children[0].type,
+							text: item.children[0].text
+						})
+					}
+				});
+				var rowfontNum = parseInt((this.screenWidth - (30 * 2)) / 18); //每行字数
+				// console.log(rowfontNum)
+
+				var pageRowNum = 10; //每页的行数
+				var startIndex = 0; //字符串起始索引
+				var readerHeight = this.readerHeight; //总高度
+				var attrIndex = 0;
+				var rowTotality = parseInt((readerHeight - (30 * 2)) / 30); //每页的能显示的行数  根据设备高度-内边距/每行高度 算出
+				console.log(rowTotality)
+				var thenRowNumy = 0; //每页已显示的行数
+				var tempIndex = 0; //每页索引
+
+				var ss = true;
+
+				function loop() {
+
+					if (attrIndex >= nowAttr.length) {
+						loop = null
+						return
+					}
+					var attrRowNum = Math.ceil(nowAttr[attrIndex].text.length / rowfontNum); //每个数组的文字的行数
+					thenRowNumy += attrRowNum;
+					// console.log('thenRowNumy--'+thenRowNumy)
+					if (thenRowNumy < rowTotality) {
+						// 缓存数组，此页可以完整现在这个数组的内容	
+						if (!temp[tempIndex]) {
+							temp[tempIndex] = []
+						}
+
+						if (nowAttr[attrIndex]) {
+							temp[tempIndex].push(nowAttr[attrIndex]);
+						}
+						attrIndex++;
+						loop();
+					} else {
+
+						var s_string = rowfontNum * (rowTotality - thenRowNumy);
+						if (nowAttr[attrIndex]) {
+							if (nowAttr[attrIndex].text.length > s_string) {
+								temp[tempIndex].push({
+									type: nowAttr[attrIndex].type,
+									text: nowAttr[attrIndex].text.slice(0, s_string)
+								});
+								if (nowAttr[attrIndex + 1]) {
+									nowAttr[attrIndex + 1].text.slice(s_string, nowAttr[attrIndex + 1].text.length - 1)
+								}
+							} else {
+								temp[tempIndex].push({
+									type: nowAttr[attrIndex].type,
+									text: nowAttr[attrIndex].text
+								});
+								// if(nowAttr[attrIndex].text.length)
+
+							}
+
+						}
+
+
+
+						tempIndex++;
+						thenRowNumy = 0;
+						loop();
+						return
+					}
+
+
+
+				}
+
+				loop();
+
+				console.log(temp)
+				return temp
+			},
+
+		}
+
+	}
+</script>
+
+<style>
+	.box {
+		position: absolute;
+		left: 0;
+		top: 0;
+		width: 750upx;
+		background-color: #dbd2cd;
+		margin: 0;
+		padding: 0;
+
+	}
+
+	.content {
+		position: absolute;
+		left: 0;
+		width: 750upx;
+
+		padding: 30px;
+		/* height: 200px; */
+		
+		overflow: hidden;
+	}
+
+	.p {
+		line-height: 30px;
+		font-size: 18px;
+		color: #231b10;
+	}
+</style>

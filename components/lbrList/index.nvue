@@ -1,0 +1,79 @@
+<template>
+	
+		<list  class="list" :show-scrollbar="false" :style="{ height: height || screenHeight, width:width || screenWidth }">
+			<!-- 下拉刷新 -->
+			<yy-refresh :refresh-text="refreshText" v-if="isRefresh" @refresh="onRefresh" ref="yyRefresh"></yy-refresh>
+			<slot></slot>
+			<!-- 上拉加载 -->
+			<yy-load-more :loading-text="loadMoreText" v-if="isLoadMore" @loadMore="onLoadMore" ref="yyLoadMore"></yy-load-more>
+		</list>
+	
+</template>
+
+<script>
+	import yyRefresh from './yy-refresh.nvue';
+	import yyLoadMore from './yy-load-more.nvue';
+	export default {
+		components: {
+			yyRefresh,
+			yyLoadMore
+		},
+		data() {
+			return {
+				screenHeight: 600,
+				screenWidth: 750,
+				refreshText: ['下拉刷新', '释放更新', '刷新中...', '刷新成功'],
+				loadMoreText: ['下拉加载','加载中...', '没有更多啦'],
+				testData:30
+			};
+		},
+		props:{
+			height: {
+				type: Number,
+				default:''
+			},
+			width: {
+				type: Number,
+				default:''
+			},
+			// 是否启用下拉刷新
+			isRefresh:{
+				type:Boolean,
+				default:true
+			},
+			// 是否启用加载更多
+			isLoadMore:{
+				type:Boolean,
+				default:false
+			},
+		},
+		created(){
+			this.init();
+		},
+		methods: {
+			init(){
+				this.screenWidth = uni.getSystemInfoSync().windowWidth;
+			},
+			onRefresh() {
+				this.$emit('refresh')
+			},
+			refreshFinish(){
+				this.$refs.yyRefresh.finish();
+			},
+			onLoadMore() {
+				this.$emit('loadMore')
+			},
+			loadMoreFinish(bool){
+				this.$refs.yyLoadMore.finish(bool);
+			}
+		}
+	};
+</script>
+
+<style>
+.list{
+	position: fixed;
+	left: 0;
+	top: 0;width: 750upx;
+}
+</style>

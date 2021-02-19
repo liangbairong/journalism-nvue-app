@@ -1,0 +1,117 @@
+<template>
+	<view class="content" :style="`height:${screenHeight}px;`">
+		<view class="box">
+			<text class="title">登陆</text>
+			<form @submit="formSubmit" @reset="formReset">
+				<view class="row">
+					<input class="row-input" :value='tel' placeholder-class="row-input-placeholder" name='tel' type="number" adjust-position="true" placeholder="请输入手机号码" maxlength="11" />
+				</view>
+				<view class="row">
+					<input class="row-input row-input2" :value='password' placeholder-class="row-input-placeholder" name="password" placeholder="请输入密码" maxlength="11" />
+				</view>
+				<view class="row">
+					<button type="default"  form-type="submit" class="submit">登陆</button>
+				</view>
+			</form>
+		</view>
+	</view>
+
+</template>
+
+<script>
+	const http = getApp().globalData.$http.http;
+	export default {
+		data() {
+			return {
+				screenHeight: 0,
+				tel:'17688946637',
+				password:'admin'
+			}
+		},
+		onLoad() {
+
+		},
+		onShow() {
+			this.screenHeight = uni.getSystemInfoSync().windowHeight;
+		},
+		methods: {
+			formSubmit(e) { 
+				http({
+					url: '/client/user/login',
+					data: e.detail.value,
+					method:'post'
+				}).then(res => {
+					if (res.code == 200) {
+						uni.setStorageSync('token',res.data);
+						uni.showToast({
+							title: '登陆成功'
+						})
+						uni.switchTab({ 
+							url: '/pages/index/index'
+						})
+					}
+				})
+			}
+		}
+	}
+</script>
+
+<style>
+	.content {
+		justify-content: center;
+		align-items: center;
+		background-image: linear-gradient(to bottom, rgba(124,203,250,1) 0%, rgba(237,136,184,1) 100%);
+		/* background-color: #ed88b8; */
+	}
+
+	.box {
+		width: 690upx;
+		border-radius: 690upx;
+		background-color: #48A4F6;
+		height: 690upx;
+		position: relative;
+		top: -100upx;
+		padding-left: 80upx;
+		padding-right: 80upx;
+	}
+	.title{
+		text-align: center;
+		font-size:40upx;
+		color: #fff;
+		margin-top: 100upx;
+		margin-bottom: 40upx;
+	}
+
+	.row {
+		height: 100upx;
+		line-height: 100upx;
+	}
+
+	.row-input {
+		height: 100upx;
+		border-width: 1px;
+		border-color: #fff;
+		color: #FFFFFF;
+		border-radius: 100upx;
+		padding-left: 20upx;
+		padding-right: 20upx;
+		font-size: 30upx;
+	}
+	.row-input-placeholder{
+		color: #fff;
+	}
+
+	.row-input2 {
+		margin-top: 20upx;
+	}
+
+	.submit {
+		margin-top: 60upx;
+		background-color: #fff;
+		color: #48A4F6;
+		border-color: #fff;
+		border-radius: 100upx;
+		height: 100upx;
+		line-height: 100upx;
+	}
+</style>

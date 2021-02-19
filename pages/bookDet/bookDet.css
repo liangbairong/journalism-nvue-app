@@ -1,0 +1,75 @@
+.content {
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		background-color: #fff;
+		width: 750upx;
+	}
+
+	.book {
+		flex-direction: row;
+		border-bottom-width: 1px;
+		border-bottom-color: #eee;
+		padding: 30upx;
+	}
+
+	.list-item-image {
+		width: 150upx;
+		height: 200upx;
+	}
+
+	.list-box {
+		padding-left: 40upx;
+		width: 550upx;
+	}
+
+	.title {
+		font-size: 20px;
+	}
+
+	.author {
+		font-size: 14px;
+		color: #999;
+		margin-top: 20upx;
+	}
+
+	.footer {
+		position: fixed;
+		left: 0;
+		bottom: 0;
+		width: 750upx;
+		flex-direction: row;
+		background-color: #fff;
+	}
+
+	.footer-but {
+		width: 375upx;
+		height:50px;
+		line-height:50px;
+		border-radius: 0;
+		border-width: 0;
+		text-align: center;
+		color: #ffffff;
+		font-size: 30upx;
+	}
+
+	.but-bookz {
+		background-color: #fff;
+		color: #9c7729;
+	}
+
+	.but-red {
+		background-color: #e54d42;
+	}
+.con-title{
+	font-size: 32upx;
+	padding: 20upx;
+	border-bottom-width: 1px;
+	border-bottom-color: #eee;
+	
+}
+.con{
+	padding: 20upx;
+	font-size: 30upx;
+	line-height: 50upx;
+}

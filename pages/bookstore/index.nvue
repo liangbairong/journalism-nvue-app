@@ -1,0 +1,79 @@
+<!-- 书城主页 -->
+
+<template>
+	<view class="content">
+
+		<view v-for="(item,index) in list" :key='index' :style="`background-color:${item.color}`" @click="into(item.url)"
+		 class="item"><text class="item-text">{{item.name}}</text></view>
+
+	</view>
+</template>
+
+<script>
+	const globalData = getApp().globalData;
+	export default {
+		data() {
+			return {
+				globalData,
+				list: [{
+						name: '起点',
+						color: '#E54D42',
+						url: '/pages/bookstore/bookstore'
+					},
+					{
+						name: '搜索',
+						color: '#F37A1D',
+						url: '/pages/search/search'
+					},
+					{
+						name: '浏览器',
+						color: '#48A4F6',
+						url: '/pages/webview/webview'
+					},
+
+				],
+
+
+
+			}
+		},
+		onLoad() {
+
+		},
+		methods: {
+			into(url) {
+				uni.navigateTo({
+					url
+				})
+			},
+		}
+	}
+</script>
+
+<style>
+	.content {
+		width: 750rpx;
+		flex-direction: row;
+		align-items: center;
+		/* justify-content: center; */
+		justify-content: space-between;
+		flex-wrap: wrap;
+		/*换行*/
+		padding: 25upx;
+	}
+
+	.item {
+		width: 340upx;
+		height: 200upx;
+		background-color: #E54D42;
+		align-items: center;
+		justify-content: center;
+		/* margin:  20upx 15upx; */
+		border-radius: 10upx;
+		margin-bottom: 25upx;
+	}
+
+	.item-text {
+		color: #fff;
+	}
+</style>

@@ -1,0 +1,65 @@
+<template>
+	<view class="content">
+		<view class="">
+			
+		</view>
+	</view>
+
+</template>
+
+<script>
+
+	export default {
+		data() {
+			return {
+				inputHeight: 80,
+				isExpanded: false
+			}
+		},
+		components: {
+			
+		},
+		onLoad() {
+
+		},
+		methods: {
+		
+			
+		}
+	}
+</script>
+
+<style>
+    .container {
+        flex: 1;
+    }
+
+    .image {
+        width: 60px;
+        height: 60px;
+    }
+
+    .text {
+        color: #ffffff;
+        font-size: 30px;
+    }
+
+    .btn {
+        width: 100px;
+        height: 100px;
+        background-color: #ff0000;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        border-radius: 50px;
+        bottom: 25px;
+        right: 25px;
+    }
+	.box{
+		position: absolute;
+		left: 0;top: 0;width: 750upx;
+		height: 300upx;
+		background-color: #007AFF;
+	}
+
+</style>

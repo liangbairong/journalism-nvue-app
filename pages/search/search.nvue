@@ -1,0 +1,107 @@
+<template>
+	<view class="content">
+		<uni-search-bar :radius="100" placeholder="书籍名称" @confirm="search"></uni-search-bar>
+
+		<lbrList @refresh="onRefresh" :height="screenHeight" ref="lbrList">
+			<cell v-for="(item, index) in list" :key="index" class="list-item" @click="det(item.bookId)">
+				<image :src="item.bookImage" mode="aspectFill" class="list-item-image"></image>
+				<view class="list-box">
+					<text class="title">{{ item.bookName }}{{globalData.safeArea}}</text>
+					<text class="author">{{ item.author }}</text>
+					<text class="con">{{item.content}}</text>
+				</view>
+			</cell>
+		</lbrList>
+	</view>
+
+</template>
+
+<script>
+	import uniSearchBar from '@/components/uni-search-bar/uni-search-bar.vue'
+	import lbrList from '@/components/lbrList/index.nvue';
+	const globalData = getApp().globalData;
+	const http = getApp().globalData.$http.http;
+	export default {
+		data() {
+			return {
+				screenHeight: 600,
+				list: [],
+				dataStatus: false,
+			}
+		},
+		components: {
+			uniSearchBar
+		},
+		onLoad() {
+			this.screenHeight = uni.getSystemInfoSync().windowHeight;
+		},
+		methods: {
+			search(val) {
+				console.log("S")
+				http({
+					url: '/common/reptileBook/search',
+					data: {
+						bookName: val,
+						bookSource: 1
+					},
+				}).then(res => {
+					console.log(res)
+					if (res.code == 200) {
+						this.list = res.data;
+					}
+				})
+
+			}
+		}
+	}
+</script>
+
+<style>
+	.content {
+		background-color: #fff;
+		flex: 1;
+	}
+	.list {
+		flex-direction: column;
+	
+	}
+	
+	.list-item {
+		/* align-items: center; */
+		/* 		justify-content: center; */
+		flex-direction: row;
+		border-bottom-width: 1px;
+		border-bottom-color: #eee;
+		padding: 30upx;
+	}
+	
+	.list-item-image {
+		width: 150upx;
+		height: 200upx;
+	}
+	
+	.list-box {
+		padding-left: 40upx;
+		width: 550upx;
+	}
+	
+	.title {
+		font-size: 16px;
+	}
+	
+	.author {
+		font-size: 12px;
+		color: #999;
+		margin-top: 20upx;
+	}
+	
+	.con {
+		font-size: 14px;
+		line-height: 20px;
+		height: 60px;
+		margin-top: 20upx;
+		color: #999;
+	}
+	
+	
+</style>

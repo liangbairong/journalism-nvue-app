@@ -1,0 +1,124 @@
+<template>
+	<view class="content">
+		<lbrList @refresh="onRefresh" :height="screenHeight"  ref="lbrList">
+			<cell >
+				<view class="list" >
+					<view class="list-item" v-for="(item, index) in list" :key="index" @click="det(item)">
+						<image :src="item.bookImage" mode="aspectFill" class="list-item-image"></image>
+						<text class="title">{{ item.bookName }}</text>
+					</view>
+				</view>
+				
+			</cell>
+		</lbrList>
+		<noData v-if="dataStatus"></noData>
+	</view>
+</template>
+
+<script>
+	import lbrList from '@/components/lbrList/index.nvue';
+	import noData from '@/components/noData/noData.nvue';
+	const globalData = getApp().globalData;
+	const http = globalData.$http.http;
+
+
+	export default {
+		components: {
+			lbrList,
+			noData
+		},
+		data() {
+			return {
+				globalData,
+				screenHeight: 600,
+				list: [],
+				dataStatus: false,
+			};
+		},
+		onLoad() {
+			
+		},
+		onShow() {
+			this.screenHeight = uni.getSystemInfoSync().windowHeight;
+			this.getList();
+		},
+		methods: {
+			getList(callback) {
+				http({
+					url: '/token/client/shelf/list'
+				}).then(res => {
+					console.log(res)
+					if (res.code == 200) {
+						res.data.forEach(item => {
+							item.bookImage = 'https:' + item.bookImage
+							item.content = item.content.toString().trim()
+						})
+						this.list = res.data;
+						
+						// this.list.push(...res.data)
+						// this.list.push(...res.data)
+						// this.list.push(...res.data)
+						// this.list.push(...res.data)
+				
+						
+						if (this.list.length === 0) {
+							this.dataStatus = true;
+						}
+					}
+					
+					callback && callback();
+				})
+			},
+			onRefresh() {
+				this.getList(() => {
+					this.$refs.lbrList.refreshFinish();
+				})
+			},
+			det(item) {
+				uni.navigateTo({
+					url: '/pages/reader/reader?bookId=' + item.bookId + '&progressDirectoryId=' + item.progressDirectoryId
+				})
+			}
+		}
+	};
+</script>
+
+<style>
+	.content {
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		background-color: #fff;
+
+	}
+	.list {
+
+		flex-direction: row;
+		align-items: center;
+		/* justify-content: center; */
+		justify-content: space-between;
+		flex-wrap: wrap;
+		/*换行*/
+		padding: 20upx 0;
+	}
+
+	.list-item {
+		padding: 25upx;
+		width: 250upx;
+		/* flex: 1; */
+	}
+
+	.list-item-image {
+		width: 200upx;
+		height: 250upx;
+	}
+
+	.title {
+
+		font-size: 16px;
+		margin-top: 20upx;
+		text-align: center;
+	}
+
+
+</style>

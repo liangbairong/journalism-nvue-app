@@ -1,0 +1,260 @@
+<!-- 小说阅读页 -->
+<template>
+	<view class="reader" :style="`height:${screenHeight}px;`">
+
+		<!-- 内容 -->
+		<text class="directoryTitle" :style="`top:${screenTop}px`">{{bookData.directoryTitle}}</text>
+		<scroll-view scroll-y :show-scrollbar="false" class="content" :style="`height:${readerHeight-30}px;top:${screenTop+30}px`">
+			<view @click="openConsolePop" class="content-box">
+				<text class="p" v-for="(item,index) in bookContent" :key="index">{{item.name=='p'?item.children[0].text:''}}</text>
+			</view>
+		</scroll-view>
+		<!-- <page-turning :bookContent="bookContent"  v-if="!direPop"></page-turning> -->
+
+		<!-- 目录 -->
+		<view :class="`directory-pop`" ref='direPop' v-if="direPop" :style="`height:${screenHeight}px;`">
+			<scroll-view scroll-y="true" class="directory-list" :style="`height:${readerHeight}px;top:${screenTop}px`">
+				<text class="directory-item" v-for="(item,index) in directoryList" @click="getContent(item.directoryId)" :key="index">{{item.directoryTitle}}</text>
+			</scroll-view>
+		</view>
+
+		<!-- 控制台 -->
+		<view class="console-pop" v-if="consolePop" :style="`height:${screenHeight}px;`">
+			<view class="console-pop-bg" :style="`height:${screenHeight}px;`" @click="openConsolePop"></view>
+			<view class="console-pop-top" :style="`padding-top: ${screenTop}px;`">
+				<view class="console-pop-top-content">
+					<!-- 退出按钮 -->
+					<view class="back-btn" @click="back">
+						<image src="../../static/images/tc.png" class="console-img" mode="aspectFill"></image>
+					</view>
+					<!-- 目录按钮 -->
+					<view class="directory-btn" @click.stop="openDirectory">
+						<image src="../../static/images/ml.png" class="console-img" mode="aspectFill"></image>
+					</view>
+					<text class="title">{{bookData.bookName}}</text>
+				</view>
+			</view>
+			<view class="console-pop-bottom" :style="`padding-bottom: ${screenBottom}px;`">
+				<view class="console-pop-top-content">
+					<!-- 上一章 -->
+					<view class="console-btn" @click="previous">
+						<image src="../../static/images/previous.png" class="console-img" mode="aspectFill"></image>
+					</view>
+					<!-- 下一章 -->
+					<view class="console-btn" @click="next">
+						<image src="../../static/images/next.png" class="console-img" mode="aspectFill"></image>
+					</view>
+				</view>
+			</view>
+		</view>
+	</view>
+</template>
+
+<script>
+	import HTMLParser from "@/util/parseHtml.js"
+	import pageTurning from '@/components/pageTurning/pageTurning.nvue'
+	const http = getApp().globalData.$http.http;
+	const animation = uni.requireNativePlugin('animation')
+
+	export default {
+		components: {
+			pageTurning,
+		},
+		data() {
+			return {
+				bookId: '',
+				screenHeight: 0, //整个页面高度
+				screenTop: 0, //顶部菜单栏高度
+				readerHeight: 0, //安全区整体高度
+				screenBottom: 0, //iphone x 安全外的高度
+				directoryList: [],
+				direPop: true, //目录弹窗状态
+				bookContent: [],
+				bookData: {},
+				consolePop: false, //控制台弹窗
+				beforeData: {}, //上一章
+				nextData: {}, //下一章
+
+				recording: null, //看书记录对象
+
+				progressDirectoryId: '', //进度目录id
+			}
+		},
+		onLoad(option) {
+			
+		
+			const sys = uni.getSystemInfoSync();
+			this.readerHeight = sys.safeArea.height;
+			this.screenTop = sys.safeAreaInsets.top;
+			this.screenHeight = sys.windowHeight;
+			this.screenBottom = (sys.safeAreaInsets.bottom !== 0) ? sys.safeAreaInsets.bottom : 0;
+			this.bookId = option.bookId;
+			this.progressDirectoryId = option.progressDirectoryId
+			// this.recording = uni.getStorageSync('book_recording_' + this.bookId) || null;
+			console.log(this.progressDirectoryId)
+
+
+			if (this.progressDirectoryId) {
+				// 从书架进去
+				this.getContent(this.progressDirectoryId);
+				this.colseDirectory();
+			} else {
+				if (this.recording) {
+					// 打开记录的章节
+					this.getContent(this.recording.directoryId);
+					this.colseDirectory();
+				} else {
+					// 没有记录打开目录
+					this.openDirectory();
+				}
+
+			}
+
+
+
+		},
+		methods: {
+			// 打开目录
+			openDirectory() {
+				this.consolePop = false;
+				this.direPop = true;
+
+				this.$nextTick(() => {
+					setTimeout(() => {
+						var testEl = this.$refs.direPop;
+						animation.transition(testEl, {
+							styles: {
+								transform: 'translate(0px, 0px)',
+							},
+							duration: 500, //ms
+							timingFunction: 'ease',
+							delay: 0, //ms
+							needLayout: true,
+						}, () => {
+
+						})
+					}, 10)
+
+				})
+
+				if (this.directoryList.length === 0) {
+					this.getDirectory();
+				}
+			},
+			// 关闭目录
+			colseDirectory() {
+				var testEl = this.$refs.direPop;
+				animation.transition(testEl, {
+					styles: {
+						transform: 'translate(-750upx, 0px)',
+					},
+					duration:500, //ms
+					timingFunction: 'ease',
+					delay: 0, //ms
+					needLayout: true,
+				}, () => {
+					this.direPop = false;
+				})
+
+			},
+			openConsolePop(e) {
+				this.consolePop = !this.consolePop;
+			},
+			back() {
+				uni.navigateBack({
+					delta: 1
+				});
+			},
+			// 设置记录
+			setRecording(data) {
+				this.recording = data;
+				uni.setStorageSync('book_recording_' + this.bookId, data);
+			},
+			getDirectory() {
+				http({
+					url: '/common/book/directory',
+					data: {
+						bookId: this.bookId
+					}
+				}).then(res => {
+					if (res.code == 200) {
+						this.directoryList = res.data;
+					}
+				})
+			},
+			// 上一章
+			previous() {
+				if (!this.beforeData.directoryId) {
+					uni.showToast({
+						title: '已经是第一章节',
+						duration: 1000
+					});
+					return
+				}
+				this.getContent(this.beforeData.directoryId);
+				this.openConsolePop();
+			},
+			// 下一章
+			next() {
+				if (!this.nextData.directoryId) {
+					uni.showToast({
+						title: '已经是最新的章节',
+						duration: 1000
+					});
+					return
+				}
+				this.getContent(this.nextData.directoryId);
+				this.openConsolePop();
+			},
+			// 获取内容
+			getContent(directoryId) {
+				http({
+					url: '/common/book/content',
+					data: {
+						directoryId
+					}
+				}).then(res => {
+					if (res.code == 200) {
+						this.bookData = res.data.current;
+						console.log(res.data)
+						const doc = new HTMLParser(res.data.current.bookContent);
+						// console.log(doc)
+						// doc.forEach(item=>{
+						// 	if(item.name=='p'){
+						// 		item.attrs= {
+						// 			// class: 'div-class',
+						// 			style: 'color: red; padding-top:20px;font-size:40px;'
+						// 		}
+						// 	}
+						// }) 
+						this.bookContent = doc;
+						this.beforeData = res.data.before || {};
+						this.nextData = res.data.next || {};
+						this.colseDirectory();
+						this.setRecording(res.data.current);
+
+						this.shelf(directoryId)
+					}
+				})
+			},
+			// 记录进度
+			shelf(progressDirectoryId) {
+				http({
+					url: '/token/client/shelf/add',
+					data: {
+						bookId: this.bookId,
+						progressDirectoryId: progressDirectoryId
+					},
+					method: 'post'
+				}).then(res => {
+					console.log(res)
+				})
+			}
+
+		}
+	}
+</script>
+
+<style>
+	@import url("./reader.css");
+</style>

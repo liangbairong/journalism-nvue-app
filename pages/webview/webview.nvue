@@ -1,0 +1,58 @@
+<template>
+	<web-view :src="url" :webview-styles="webviewStyles" :style="`height:${screenHeight}px;width:750upx;`"></web-view>
+
+
+	<view @click="back" style="height: 30px;width: 30px;">
+		<text>后退</text>
+	</view>
+
+</template>
+
+<script>
+	import lbrList from '@/components/lbrList/index.nvue';
+	import noData from '@/components/noData/noData.nvue';
+	const globalData = getApp().globalData;
+	const http = globalData.$http.http;
+
+
+	export default {
+		components: {
+			lbrList,
+			noData
+		},
+		data() {
+			return {
+				url: 'https://www.hao123.com/',
+				screenHeight: 0,
+				webviewStyles: {
+					progress: {
+						color: '#FF3333'
+					}
+				}
+			};
+		},
+		onLoad() {
+			this.screenHeight = uni.getSystemInfoSync().windowHeight-100;
+		},
+		onShow() {
+
+		},
+		methods: {
+			back() {
+				console.log('aaaaaaaaaaa')
+				var currentWebview = this.$mp.page.$getAppWebview() //获取当前页面的webview对象
+				currentWebview.forward();
+			}
+		}
+	};
+</script>
+
+<style>
+	.content {
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		background-color: #fff;
+
+	}
+</style>
